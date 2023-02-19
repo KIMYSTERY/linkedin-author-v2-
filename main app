@@ -1,0 +1,49 @@
+import requests
+
+# Remplacez les valeurs avec vos propres informations
+client_id = '86xmm4nl1zgqj8'
+client_secret = 'FDsQ63qkIMpvNxEZ'
+redirect_uri = 'https://www.linkedin.com/developers/tools/oauth/redirect'
+scope = 'r_liteprofile r_emailaddress'  # Liste des autorisations demandées
+keywords = ['designer d\'intérieur']  # Mots-clés pour la recherche d'expériences
+
+# Envoyer une demande d'autorisation à LinkedIn
+auth_url = f'https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id={client_id}&redirect_uri={redirect_uri}&scope={scope}'
+response = requests.get(auth_url)
+
+# Rediriger l'utilisateur vers la page d'autorisation de LinkedIn
+print(f"Redirigez l'utilisateur vers la page d'autorisation de LinkedIn:\n{response.url}")
+
+# Une fois que l'utilisateur a donné son consentement, LinkedIn renverra un code d'autorisation à l'URI de redirection spécifiée.
+# Utilisez ce code pour demander un jeton d'accès et accéder aux ressources de l'utilisateur.
+authorization_code = input("Entrez le code d'autorisation renvoyé par LinkedIn:")
+
+# Demander un jeton d'accès OAuth à l'API LinkedIn
+access_token_url = 'https://www.linkedin.com/oauth/v2/accessToken'
+access_token_payload = {
+    'grant_type': 'authorization_code',
+    'code': authorization_code,
+    'redirect_uri': redirect_uri,
+    'client_id': client_id,
+    'client_secret': client_secret
+}
+access_token_response = requests.post(access_token_url, data=access_token_payload)
+access_token = access_token_response.json()['access_token']
+
+# Utiliser l'API LinkedIn pour récupérer les adresses e-mail des utilisateurs ayant une expérience contenant les mots-clés spécifiés
+email_url = 'https://api.linkedin.com/v2/emailAddress?q=members&projection=(elements*(handle~))'
+headers = {'Authorization': f'Bearer {access_token}'}
+response = requests.get(email_url, headers=headers)
+email_data = response.json()
+
+# Afficher les adresses e-mail trouvées
+for element in email_data['elements']:
+    handle = element['handle~']['emailAddress']
+    experience_url = f"https://api.linkedin.com/v2/{element['$URN']}/positions"
+    experience_response = requests.get(experience_url, headers=headers)
+    experience_data = experience_response.json()
+    for experience in experience_data['elements']:
+        for keyword in keywords:
+            if keyword.lower() in experience['description'].lower():
+                print(f"Adresse e-mail: {handle}, Expérience: {experience['description']}")
+                break
