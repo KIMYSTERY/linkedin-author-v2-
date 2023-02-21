@@ -1,12 +1,11 @@
 import requests
 
 # Remplacez les valeurs avec vos propres informations
-client_id = '86xmm4nl1zgqj8'
-client_secret = 'FDsQ63qkIMpvNxEZ'
+client_id = ''
+client_secret = ''
 redirect_uri = 'https://www.linkedin.com/developers/tools/oauth/redirect'
 scope = 'r_liteprofile r_emailaddress'  # Liste des autorisations demandées
 keywords = ['designer d\'intérieur']  # Mots-clés pour la recherche d'expériences
-
 # Envoyer une demande d'autorisation à LinkedIn
 auth_url = f'https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id={client_id}&redirect_uri={redirect_uri}&scope={scope}'
 response = requests.get(auth_url)
